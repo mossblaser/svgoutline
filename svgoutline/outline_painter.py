@@ -26,6 +26,7 @@ from PySide2.QtGui import QPaintEngine
 from PySide2.QtGui import QPainterPath
 
 from PySide2.QtCore import Qt
+from PySide2.QtCore import QLineF
 
 from PySide2.QtGui import QPen
 from PySide2.QtGui import QTransform
@@ -122,16 +123,16 @@ class OutlinePaintEngine(QPaintEngine):
         self._transform = QTransform()
         self._pen = QPen()
         
-        # [((r, g, b, a) or None, [(x, y), ...]), ...]
+        # [((r, g, b, a) or None, width, [(x, y), ...]), ...]
         #
-        # Colours are None or tuples of 0.0 to 1.0 floats. Line coordinates are
-        # given in pixels.
+        # Colours are None or tuples of 0.0 to 1.0 floats. Line widths are
+        # given in pixels. Line coordinates are given in pixels.
         self._outlines = []
     
     def getOutlines(self):
         """
-        See OutlinePaintDevice.getOutlines(), except the line coordinates are
-        given in pixels.
+        See OutlinePaintDevice.getOutlines(), except the line widths and
+        coordinates are given in pixels.
         """
         return self._outlines
     
@@ -216,9 +217,18 @@ class OutlinePaintEngine(QPaintEngine):
                     "not supported and the dash pattern will be incorrectly "
                     "scaled.")
         
+        # Approximate the scaling factor applied by the current transform as
+        # being the scale applied to a diagonal line. This won't work if the
+        # line happens to be an eigen vector but for non-uniform scalings, the
+        # concept of a scaled line widthis not especially well defined anyway
+        # anyway.
+        test_line = QLineF(0, 0, 2**0.5 / 2.0, 2**0.5 / 2.0)  # (Line of length 1)
+        scaled_pen_width = pen_width * self._transform.map(test_line).length()
+        
         # Don't scale the points for dashing when in cosmetic mode
         if self._pen.isCosmetic():
             transform = inverse_transform = QTransform()
+            scaled_pen_width = pen_width
         
         # Convert to simple straight line segments. The conversion of Text, Bezier
         # curves, arcs, ellipses etc. into to chains of simple straight line is
@@ -235,7 +245,7 @@ class OutlinePaintEngine(QPaintEngine):
             # Transform the coordinates back to pixels once more and add colour
             # information.
             self._outlines.extend(
-                (rgba, [transform.map(*p) for p in line])
+                (rgba, scaled_pen_width, [transform.map(*p) for p in line])
                 for line in sub_lines
             )
 
@@ -277,13 +287,18 @@ class OutlinePaintDevice(QPaintDevice):
         
         Returns
         -------
-        [((r, g, b, a) or None, [(x, y), ...]), ...]
+        [((r, g, b, a) or None, width, [(x, y), ...]), ...]
             A list of polylines made up of a (colour, line) pairs.
             
             The 'colour' values define the colour used to draw the line, if a
             solid colour was used or None if a gradient or patterned stroke was
             used. Colours are given as four-tuples in RGBA order with values
             from 0.0 to 1.0.
+            
+            The 'width' value gives the line width used to draw the line (given
+            in mm). Note that if the shape being drawn has a non-uniform
+            scaling applied, this value may not be meaningful and its actual
+            value should be considered undefined.
             
             The 'line' part of each tuple defines the outline as a series of
             (x, y) coordinates (given in mm) which describe a continuous
@@ -294,8 +309,8 @@ class OutlinePaintDevice(QPaintDevice):
         # Scale line coordinates back into mm (from pixels)
         scale = 1.0 / self._ppmm
         return [
-            (rgba, [(x*scale, y*scale) for (x, y) in line])
-            for (rgba, line) in self._paint_engine.getOutlines()
+            (rgba, width*scale, [(x*scale, y*scale) for (x, y) in line])
+            for (rgba, width, line) in self._paint_engine.getOutlines()
         ]
     
     

@@ -60,13 +60,18 @@ def svg_to_outlines(root, width_mm=None, height_mm=None, pixels_per_mm=5.0):
     
     Returns
     -------
-    [((r, g, b, a) or None, [(x, y), ...]), ...]
+    [((r, g, b, a) or None, width, [(x, y), ...]), ...]
         A list of polylines described by (colour, line) pairs.
         
         The 'colour' values define the colour used to draw the line (if a solid
         colour was used) or None (if a gradient or patterned stroke was used).
         Colours are given as four-tuples in RGBA order with values from 0.0 to
         1.0.
+        
+        The 'width' value gives the line width used to draw the line (given in
+        mm). If the shape being drawn has a non-uniform scaling applied, this
+        value may not be meaningful and its actual value should be considered
+        undefined.
         
         The 'line' part of each tuple defines the outline as a series of (x, y)
         coordinates (given in mm) which describe a continuous polyline. These

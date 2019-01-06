@@ -230,7 +230,7 @@ class TestOutlinePaintDevice(object):
         p.drawPath(path)
         
         assert opd.getOutlines() == [
-            ((0.0, 0.0, 0.0, 1.0), [(0.0, 0.0), (1.0, 2.0)]),
+            ((0.0, 0.0, 0.0, 1.0), 0.1, [(0.0, 0.0), (1.0, 2.0)]),
         ]
     
     def test_transformed_path(self, p, opd):
@@ -241,7 +241,7 @@ class TestOutlinePaintDevice(object):
         p.drawPath(path)
         
         assert opd.getOutlines() == [
-            ((0.0, 0.0, 0.0, 1.0), [(0.0, 0.0), (1.0, 2.0)]),
+            ((0.0, 0.0, 0.0, 1.0), 1.0, [(0.0, 0.0), (1.0, 2.0)]),
         ]
     
     def test_singular_transformed_path(self, p, opd):
@@ -251,9 +251,11 @@ class TestOutlinePaintDevice(object):
         path.lineTo(1, 2)
         p.drawPath(path)
         
-        assert opd.getOutlines() == [
-            ((0.0, 0.0, 0.0, 1.0), [(0.0, 0.0), (1.0, 0.0)]),
-        ]
+        out = opd.getOutlines()
+        assert len(out) == 1
+        colour, width, lines = out[0]
+        assert colour == (0.0, 0.0, 0.0, 1.0)
+        assert lines == [(0.0, 0.0), (1.0, 0.0)]
     
     def test_singular_transformed_path_with_dashes(self, p, opd):
         with pytest.warns(UserWarning):
@@ -268,9 +270,11 @@ class TestOutlinePaintDevice(object):
             path.lineTo(1, 2)
             p.drawPath(path)
             
-            assert opd.getOutlines() == [
-                ((0.0, 0.0, 0.0, 1.0), [(0.0, 0.0), (1.0, 0.0)]),
-            ]
+            out = opd.getOutlines()
+            assert len(out) == 1
+            colour, width, lines = out[0]
+            assert colour == (0.0, 0.0, 0.0, 1.0)
+            assert lines == [(0.0, 0.0), (1.0, 0.0)]
     
     def test_colours(self, p, opd):
         p.setPen(QColor(255, 0, 0))
@@ -309,11 +313,11 @@ class TestOutlinePaintDevice(object):
         p.drawPath(path)
         
         assert opd.getOutlines() == [
-            ((1.0, 0.0, 0.0, 1.0), [(0.0, 0.0), (1.0, 0.0)]),
-            ((0.0, 1.0, 0.0, 1.0), [(0.0, 1.0), (1.0, 1.0)]),
-            ((0.0, 0.0, 1.0, 1.0), [(0.0, 2.0), (1.0, 2.0)]),
-            ((0.0, 0.0, 0.0, 128/255.), [(0.0, 3.0), (1.0, 3.0)]),
-            (None, [(0.0, 4.0), (1.0, 4.0)]),
+            ((1.0, 0.0, 0.0, 1.0), 0.1, [(0.0, 0.0), (1.0, 0.0)]),
+            ((0.0, 1.0, 0.0, 1.0), 0.1, [(0.0, 1.0), (1.0, 1.0)]),
+            ((0.0, 0.0, 1.0, 1.0), 0.1, [(0.0, 2.0), (1.0, 2.0)]),
+            ((0.0, 0.0, 0.0, 128/255.), 0.1, [(0.0, 3.0), (1.0, 3.0)]),
+            (None, 0.1, [(0.0, 4.0), (1.0, 4.0)]),
         ]
     
     def test_simple_dashes(self, p, opd):
@@ -328,8 +332,8 @@ class TestOutlinePaintDevice(object):
         p.drawPath(path)
         
         assert opd.getOutlines() == [
-            ((0.0, 0.0, 0.0, 1.0), [(0.0, 0.0), (1.0, 0.0)]),
-            ((0.0, 0.0, 0.0, 1.0), [(1.5, 0.0), (2.5, 0.0)]),
+            ((0.0, 0.0, 0.0, 1.0), 0.5, [(0.0, 0.0), (1.0, 0.0)]),
+            ((0.0, 0.0, 0.0, 1.0), 0.5, [(1.5, 0.0), (2.5, 0.0)]),
         ]
     
     def test_simple_dashes_offset(self, p, opd):
@@ -345,9 +349,9 @@ class TestOutlinePaintDevice(object):
         p.drawPath(path)
         
         assert opd.getOutlines() == [
-            ((0.0, 0.0, 0.0, 1.0), [(0.0, 0.0), (0.5, 0.0)]),
-            ((0.0, 0.0, 0.0, 1.0), [(1.0, 0.0), (2.0, 0.0)]),
-            ((0.0, 0.0, 0.0, 1.0), [(2.5, 0.0), (3.0, 0.0)]),
+            ((0.0, 0.0, 0.0, 1.0), 0.5, [(0.0, 0.0), (0.5, 0.0)]),
+            ((0.0, 0.0, 0.0, 1.0), 0.5, [(1.0, 0.0), (2.0, 0.0)]),
+            ((0.0, 0.0, 0.0, 1.0), 0.5, [(2.5, 0.0), (3.0, 0.0)]),
         ]
     
     def test_dashes_scaled(self, p, opd):
@@ -362,7 +366,7 @@ class TestOutlinePaintDevice(object):
         path.lineTo(3, 3)
         p.drawPath(path)
         
-        assert opd.getOutlines() == [
+        assert [(colour, lines) for (colour, width, lines) in opd.getOutlines()] == [
             ((0.0, 0.0, 0.0, 1.0), [(0.0, 0.0), (1.0, 2.0)]),
             ((0.0, 0.0, 0.0, 1.0), [(2.0, 4.0), (3.0, 6.0)]),
         ]
@@ -380,7 +384,7 @@ class TestOutlinePaintDevice(object):
         path.lineTo(3, 0)
         p.drawPath(path)
         
-        assert opd.getOutlines() == [
+        assert [(colour, lines) for (colour, width, lines) in opd.getOutlines()] == [
             ((0.0, 0.0, 0.0, 1.0), [(0.0, 0.0), (1.0, 0.0)]),
             ((0.0, 0.0, 0.0, 1.0), [(1.5, 0.0), (2.5, 0.0)]),
         ]
@@ -400,8 +404,8 @@ class TestOutlinePaintDevice(object):
         
         lines = opd.getOutlines()
         assert len(lines) == 2
-        colour_0, line_0 = lines[0]
-        colour_1, line_1 = lines[1]
+        colour_0, width_0, line_0 = lines[0]
+        colour_1, width_1, line_1 = lines[1]
         
         assert len(line_0) > 2
         assert len(line_1) > 2
@@ -423,8 +427,8 @@ class TestOutlinePaintDevice(object):
         
         lines = opd.getOutlines()
         assert len(lines) == 2
-        colour_0, line_0 = lines[0]
-        colour_1, line_1 = lines[1]
+        colour_0, width_0, line_0 = lines[0]
+        colour_1, width_1, line_1 = lines[1]
         
         assert len(line_0) > 2
         assert len(line_0) == len(line_1)
