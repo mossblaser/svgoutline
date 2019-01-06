@@ -1,0 +1,4 @@
+# Test suite requirements
+pytest>=2.6
+flake8
+shapely
