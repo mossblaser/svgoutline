@@ -8,10 +8,6 @@ import re
 
 from xml.etree import ElementTree
 
-from collections import OrderedDict
-
-from svgoutline.xml_utils import xml_deep_child_index, xml_get_at_index
-
 
 # Relevant XML namespace URIs used by SVGs
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
@@ -100,88 +96,3 @@ def get_svg_page_size(root):
     height_mm = css_dimension_to_mm(height, pixels_per_mm)
     
     return (width_mm, height_mm)
-
-
-def is_inkscape_layer(tag):
-    """
-    Is a given XML tag an Inkscape layer?
-    """
-    return (tag.tag in ("g", "{{{}}}g".format(SVG_NAMESPACE)) and
-            tag.attrib.get("{{{}}}groupmode".format(INKSCAPE_NAMESPACE)) == "layer")
-
-
-def get_inkscape_layer_label(tag):
-    """
-    Given an inkscape layer 'g' tag, return the label assigned to that layer.
-    """
-    return tag.attrib.get("{{{}}}label".format(INKSCAPE_NAMESPACE))
-
-
-def is_inkscape_layer_visible(tag):
-    """
-    Given an inkscape layer 'g' tag, return True if it is visible and False if
-    hidden.
-    """
-    style = tag.attrib.get("style")
-    if style is None:
-        return True
-    else:
-        match = re.match(r"(^|.*;)\s*display\s*:\s*none\s*($|;.*)", style)
-        print(match is None)
-        return match is None
-
-
-def set_svg_visibility(tag, visibility):
-    """
-    Given an SVG tag, mutate it to add or remove 'display:none' to the style
-    attribute.
-    """
-    style = tag.attrib.get("style", "")
-    
-    # Remove visibility specifier
-    style = re.sub(r"(^|;+)\s*display\s*:\s*[^\s;]+\s*($|;)", ";", style)
-    style = style.strip("; \t\n")
-    
-    # Change/remove the style attribute
-    if not visibility:
-        style += ";display:none"
-        style = style.strip(";")
-    
-    if style:
-        tag.attrib["style"] = style
-    else:
-        tag.attrib.pop("style", None)
-
-
-def find_inkscape_layers(root):
-    """
-    Given an ElementTree-parsed Inkscape-generated SVG file, return an
-    OrderedDict of new ElementTrees containing a complete SVG with only a
-    single layer. Each entry is identified by a tuple giving the heirarchy of
-    layer names. An entry keyed with an empty tuple contains all SVG elements
-    not within one of the other layers.
-    """
-    assert root.tag == "svg" or root.tag == "{{{}}}svg".format(SVG_NAMESPACE)
-    
-    # Find all layers (and their depth in the XML tree). NB, we also include
-    # the original root to capture any objects not on a layer.
-    layers = list(filter(is_inkscape_layer, root.iter()))
-    indices = [xml_deep_child_index(root, layer) for layer in layers]
-    
-    # Layers are stored in drawing order in the file so the 'first' layer
-    # listed in Inkscape is the last one in the file. To produce an ordering
-    # identical to that in Inkscape's GUI, we must reverse the order within
-    # each level of the heirarchy.
-    indices, layers = zip(*sorted(zip(indices, layers),
-                                  key=lambda il: tuple(-i for i in il[0])))
-    
-    # Get the hierarchy of layer names
-    labels = [
-        tuple(get_inkscape_layer_label(tag)
-              for tag in (xml_get_at_index(root, index[:i])
-                          for i in range(len(index) + 1))
-              if is_inkscape_layer(tag))
-        for index, tag in zip(indices, layers)
-    ]
-    
-    return OrderedDict(zip(labels, layers))
