@@ -1,6 +1,14 @@
 """
 A QPaintDevice which, when painted with vector input, collects the line
 segments drawn.
+
+Qt's QPainter infrastructure makes it really easy to implement new back-ends
+and Qt even provides default method implementations which handle the most
+complex drawing commands (e.g. Beziers, Text etc.) converting these into
+straight line segments.
+
+The backend implemented in this module may be used along with QSvg to turn SVG
+documents into lists of line segments ready for cutting/drawing with a plotter.
 """
 
 import warnings
@@ -12,7 +20,6 @@ try:
 except ImportError:
     izip = zip
 
-from PySide2.QtGui import QGuiApplication
 from PySide2.QtGui import QPainter
 from PySide2.QtGui import QPaintDevice
 from PySide2.QtGui import QPaintEngine
@@ -168,7 +175,7 @@ class OutlinePaintEngine(QPaintEngine):
         # written. Fortunately the QtSVG renderer only ever uses QPainterPath
         # objects for drawing.
         raise NotImplementedError(
-            "pyside2 bug PYSIDE-891 prevents drawPolygon being implemented")
+            "Qt for Python bug PYSIDE-891 prevents drawPolygon being implemented")
         
         # Implementation should look something like:
         #
@@ -296,7 +303,7 @@ class OutlinePaintDevice(QPaintDevice):
         return self._paint_engine
     
     def metric(self, num):
-        inches_per_mm = 25.4
+        mm_per_inch = 25.4
         
         if num == QPaintDevice.PdmWidth:
             return self._width * self._ppmm
@@ -311,13 +318,13 @@ class OutlinePaintDevice(QPaintDevice):
         elif num == QPaintDevice.PdmDepth:
             return 1
         elif num == QPaintDevice.PdmDpiX:
-            return inches_per_mm * self._ppmm
+            return mm_per_inch * self._ppmm
         elif num == QPaintDevice.PdmDpiY:
-            return inches_per_mm * self._ppmm
+            return mm_per_inch * self._ppmm
         elif num == QPaintDevice.PdmPhysicalDpiX:
-            return inches_per_mm * self._ppmm
+            return mm_per_inch * self._ppmm
         elif num == QPaintDevice.PdmPhysicalDpiY:
-            return inches_per_mm * self._ppmm
+            return mm_per_inch * self._ppmm
         elif num == QPaintDevice.PdmDevicePixelRatio:
             return 1
         elif num == QPaintDevice.PdmDevicePixelRatioScaled:
