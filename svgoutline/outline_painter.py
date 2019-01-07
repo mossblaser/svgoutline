@@ -148,7 +148,8 @@ class OutlinePaintEngine(QPaintEngine):
             self._transform = new_state.transform()
         if dirty_flags & QPaintEngine.DirtyPen:
             self._pen = new_state.pen()
-        if (dirty_flags & QPaintEngine.DirtyClipRegion or
+        if (dirty_flags & QPaintEngine.DirtyClipEnabled or
+                dirty_flags & QPaintEngine.DirtyClipRegion or
                 dirty_flags & QPaintEngine.DirtyClipPath):
             # Clipping seems to be done by the QtSVG library's own renderer so
             # some time can be saved here!
@@ -163,6 +164,8 @@ class OutlinePaintEngine(QPaintEngine):
                 raise NotImplementedError(
                     "CompositionMode {} not supported".format(
                         new_state.compositionMode()))
+        
+        print(new_state.clipOperation())
 
     def drawImage(self, r, pm, sr, flags):
         # Draw image outline...

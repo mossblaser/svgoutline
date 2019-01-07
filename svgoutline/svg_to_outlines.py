@@ -27,6 +27,10 @@ def svg_to_outlines(root, width_mm=None, height_mm=None, pixels_per_mm=5.0):
     Given an SVG as a Python ElementTree, return a set of straight line
     segments which approximate the outlines in that SVG when rendered.
 
+    Occlusion is not accounted for in the returned list of outlines. Even if
+    one shape is completely occluded by another, both of their outlines will be
+    reported. Simillarly, overlapping lines will also be passed through.
+
     .. note::
 
         This function internally uses the QSvg library from Qt to render the

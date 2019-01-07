@@ -1,15 +1,45 @@
 svgoutline
 ==========
 
-A library which converts SVG graphics a set of simple line and curve segments.
-This tools is intended to be used as a back-end for driving pen plotters or
-desk-top cutting machines.
+This Python library extracts all strokes (outlines) from an SVG vector graphics
+file as a series of straight line segments appropriate for driving pen plotters
+or desktop cutting machines.
+
+Key features:
+
+* **Supports most common SVG features** including beziers, shapes, text and
+  dashed lines.
+* **Output is just a flat list of straight lines** given as page coordinates in
+  millimetres.  No transformations required.
+* **Ignores out non-stroked objects.**
+* **Curves are approximated by straight lines** with user-defined fidelity.
+* **Captures stroke colours** in RGBA format.
+* **Captures stroke widths** in millimetres.
+
+Limitations:
+
+* **Only [SVG Tiny 1.2](https://www.w3.org/TR/SVGTiny12/) is supported** due to the
+  use of [Qt SVG](http://doc.qt.io/qt-5/qtsvg-index.html) internally. The only
+  significant missing feature compared with 'full-fat' SVG is clipping mask
+  support.
+* **Depends on [Qt for Python (a.k.a.
+  PySide2)](https://wiki.qt.io/Qt_for_Python).**  This is a relatively
+  non-trivial dependency but is easy to install from
+  [PyPI](https://pypi.org/project/PySide2/) on most platforms.
+* **Oblivious to fills and overlaps.** Consequently, if two shapes overlap,
+  their full outlines will be included in the output regardless of what parts
+  of their outlines are actually visible. For plotting purposes this should not
+  be a significant problem as input SVGs are unlikely to contain filled
+  elements.
+* **Output does not distinguish between closed paths and paths whose start and
+  end coordinates are the same.** This distinction is not important for most
+  plotting applications.
 
 Tests
 -----
 
 The tests are written using [py.test](https://docs.pytest.org/en/latest/) and
-test dependencies can be installed an the tests executed with:
+test dependencies can be installed and the tests executed with:
 
     $ pip install -r requirements-test.txt
     $ py.test tests

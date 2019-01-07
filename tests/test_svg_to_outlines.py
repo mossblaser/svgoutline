@@ -290,3 +290,76 @@ def test_gradient():
     assert svg_to_outlines(svg) == [
         (None, 1, [(0, 0), (20, 10)]),
     ]
+
+
+def test_occlusion():
+    # Occlusion is not supported; this test make sure this doesn't change
+    # without me noticing...
+    svg = ElementTree.fromstring("""
+        <svg width="2cm" height="1cm" viewBox="0 0 2 1">
+            <rect
+              style="fill:white;stroke-width:0.1;stroke:#00ff00"
+              width="2"
+              height="1"
+              x="0"
+              y="0"
+            />
+            <rect
+              style="fill:white;stroke-width:0.1;stroke:#ff0000"
+              width="1"
+              height="1"
+              x="1"
+              y="0"
+            />
+        </svg>
+    """)
+    (
+        (colour_0, width_0, lines_0),
+        (colour_1, width_1, lines_1),
+    ) = svg_to_outlines(svg)
+    
+    assert colour_0 == (0, 1, 0, 1)
+    assert colour_1 == (1, 0, 0, 1)
+    
+    assert width_0 == width_1 == 1
+    
+    assert Polygon(lines_0).equals(box(0, 0, 20, 10))
+    assert Polygon(lines_1).equals(box(10, 0, 20, 10))
+
+
+def test_clipping():
+    # Clipping is not part of the SVG Tiny 1.2 spec and clipping paths will be
+    # ignored. This test checks that this doesn't change unepxectedly. 
+    svg = ElementTree.fromstring("""
+        <svg width="2cm" height="1cm" viewBox="0 0 2 1">
+            <defs>
+                <clipPath id="clip0" clipPathUnits="userSpaceOnUse">
+                    <rect
+                      style="fill:white"
+                      width="1"
+                      height="1"
+                      x="-0.5"
+                      y="-0.5"
+                    />
+                </clipPath>
+            </defs>
+            <rect
+              clip-path="url(#clip0)"
+              style="stroke-width:0.1;stroke:#00ff00"
+              width="2"
+              height="1"
+              x="0"
+              y="0"
+            />
+        </svg>
+    """)
+    ((colour, width, lines), ) = svg_to_outlines(svg)
+    
+    assert colour == (0, 1, 0, 1)
+    assert width == 1
+    
+    # Expect no clipping to actually take place
+    assert Polygon(lines).equals(box(0, 0, 20, 10))
+    
+    # For reference: Assertion if clipping paths worked:
+    #assert Polygon(lines).equals(LineString([(0, 5), (0, 0), (5, 0)])), lines
