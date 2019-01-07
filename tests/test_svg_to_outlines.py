@@ -292,6 +292,64 @@ def test_gradient():
     ]
 
 
+def test_text_paths():
+    # Test for text-on-path support. This is not provided in SVG Tiny 1.2 and
+    # so is not expected to work here so this test actually checks for
+    # non-functioning text path support to spot if this changes in the future.
+    #
+    # When text path support works correctly, a 'T' will be rendered upside
+    # down since the path it is on runs from right-to-left.
+    svg = ElementTree.fromstring("""
+        <svg width="2cm" height="1cm" viewBox="0 0 2 1"
+          xmlns:xlink="http://www.w3.org/1999/xlink">
+          <path
+             id="p0"
+             d="M2,0 L0,0"
+           />
+          <text
+             style="font-size:1;stroke-width:0.1"
+             id="text38403">
+            <textPath
+               xlink:href="#p0"
+               id="textPath38413">T</textPath>
+          </text>
+        </svg>
+    """)
+    out = svg_to_outlines(svg)
+
+    # Currently unsupported so expect no text to be shown.
+    assert len(out) == 0
+
+
+def test_text_spans():
+    # <tspan> is not supported in SVG Tiny 1.2 and these tags should be ignored
+    # (though their contents retained, just in the wrong space). This test just
+    # checks this is occurring and that support has not been added without
+    # being noticed...
+    svg = ElementTree.fromstring("""
+        <svg width="2cm" height="1cm" viewBox="0 0 2 1">
+            <text
+              style="stroke-width:0.1;font-size:1;stroke:black"
+              x="0" y="1"
+            >T<tspan dy="1">T</tspan></text>
+        </svg>
+    """)
+    out = svg_to_outlines(svg)
+
+    assert len(out) == 2
+
+    colour_0, width_0, line_0 = out[0]
+    colour_1, width_1, line_1 = out[1]
+
+    letter_0 = Polygon(line_0)
+    letter_1 = Polygon(line_1)
+
+    letter_0_ymin = letter_0.bounds[1]
+    letter_1_ymin = letter_1.bounds[1]
+
+    assert letter_0_ymin == letter_1_ymin
+
+
 def test_occlusion():
     # Occlusion is not supported; this test make sure this doesn't change
     # without me noticing...
@@ -317,19 +375,19 @@ def test_occlusion():
         (colour_0, width_0, lines_0),
         (colour_1, width_1, lines_1),
     ) = svg_to_outlines(svg)
-    
+
     assert colour_0 == (0, 1, 0, 1)
     assert colour_1 == (1, 0, 0, 1)
-    
+
     assert width_0 == width_1 == 1
-    
+
     assert Polygon(lines_0).equals(box(0, 0, 20, 10))
     assert Polygon(lines_1).equals(box(10, 0, 20, 10))
 
 
 def test_clipping():
     # Clipping is not part of the SVG Tiny 1.2 spec and clipping paths will be
-    # ignored. This test checks that this doesn't change unepxectedly. 
+    # ignored. This test checks that this doesn't change unepxectedly.
     svg = ElementTree.fromstring("""
         <svg width="2cm" height="1cm" viewBox="0 0 2 1">
             <defs>
@@ -354,12 +412,12 @@ def test_clipping():
         </svg>
     """)
     ((colour, width, lines), ) = svg_to_outlines(svg)
-    
+
     assert colour == (0, 1, 0, 1)
     assert width == 1
-    
+
     # Expect no clipping to actually take place
     assert Polygon(lines).equals(box(0, 0, 20, 10))
-    
+
     # For reference: Assertion if clipping paths worked:
-    #assert Polygon(lines).equals(LineString([(0, 5), (0, 0), (5, 0)])), lines
+    # assert Polygon(lines).equals(LineString([(0, 5), (0, 0), (5, 0)])), lines

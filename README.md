@@ -19,9 +19,14 @@ Key features:
 Limitations:
 
 * **Only [SVG Tiny 1.2](https://www.w3.org/TR/SVGTiny12/) is supported** due to the
-  use of [Qt SVG](http://doc.qt.io/qt-5/qtsvg-index.html) internally. The only
-  significant missing feature compared with 'full-fat' SVG is clipping mask
-  support.
+  use of [Qt SVG](http://doc.qt.io/qt-5/qtsvg-index.html) internally. The
+  following significant features are missing which you might otherwise expect:
+  * Clipping masks are not supported and will be ignored.
+  * Text displayed along a path is not supported and will not be rendered.
+  * Adjustments to the style and position of individual parts of a text element
+    are not supported (e.g. setting just one word to bold or increasing or
+    decreasing the space between pairs of characters). These adjustments will
+    be ignored.
 * **Depends on [Qt for Python (a.k.a.
   PySide2)](https://wiki.qt.io/Qt_for_Python).**  This is a relatively
   non-trivial dependency but is easy to install from

@@ -164,8 +164,6 @@ class OutlinePaintEngine(QPaintEngine):
                 raise NotImplementedError(
                     "CompositionMode {} not supported".format(
                         new_state.compositionMode()))
-        
-        print(new_state.clipOperation())
 
     def drawImage(self, r, pm, sr, flags):
         # Draw image outline...
