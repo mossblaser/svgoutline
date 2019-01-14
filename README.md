@@ -47,8 +47,8 @@ Limitations:
   non-trivial dependency but is easy to install from
   [PyPI](https://pypi.org/project/PySide2/) on most platforms. Unfortunately it
   makes svgoutline subject to the same bugs (e.g.
-  https://bugreports.qt.io/browse/QTBUG-72997 which at the time of writing
-  causes text outlines and dash patterns to render too small).
+  [QTBUG-72997](https://bugreports.qt.io/browse/QTBUG-72997) which at the time
+  of writing causes text outlines and dash patterns to render too small).
 * **Oblivious to fills and overlaps.** Consequently, if two shapes overlap,
   their full outlines will be included in the output regardless of what parts
   of their outlines are actually visible. For plotting purposes this should not
