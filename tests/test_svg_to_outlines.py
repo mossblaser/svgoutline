@@ -213,6 +213,27 @@ def test_text():
     assert top_area > btm_area
 
 
+@pytest.mark.xfail(strict=True, reason="QtSVG Bug QTBUG-72997")
+def test_text_line_width_and_colour():
+    # Check text is rendered with the correct line width and colour
+    svg = ElementTree.fromstring("""
+        <svg width="2cm" height="1cm" viewBox="0 0 2 1">
+            <text
+              style="stroke-width:0.1;font-size:1;stroke:black"
+              x="0" y="1"
+            >T</text>
+        </svg>
+    """)
+    out = svg_to_outlines(svg)
+
+    assert len(out) == 1
+
+    colour, width, line = out[0]
+
+    assert colour == (0, 0, 0, 1)
+    assert width == 1
+
+
 @pytest.mark.parametrize("pixels_per_mm", [1.0, 2.5, 5.0, 20.0, 100.0])
 def test_resolution(pixels_per_mm):
     # Check varying the resolution does correctly increase/decrease the detail
