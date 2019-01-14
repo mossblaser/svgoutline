@@ -109,3 +109,8 @@ guide](https://www.python.org/dev/peps/pep-0008/) and is checked using
 commands above). Run it using:
 
     $ flake8 tests svgoutline
+
+License
+-------
+
+GNU Lesser General Public License v3 (LGPLv3)
