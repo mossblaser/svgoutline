@@ -195,7 +195,7 @@ class TestOutlinePaintDevice(object):
     def opd(self, app, width, height, ppmm):
         return OutlinePaintDevice(width, height, ppmm)
 
-    @pytest.yield_fixture
+    @pytest.fixture
     def p(self, app, opd):
         p = QPainter(opd)
         try:
