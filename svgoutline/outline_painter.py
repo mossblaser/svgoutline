@@ -143,21 +143,21 @@ class OutlinePaintEngine(QPaintEngine):
         return True
 
     def updateState(self, new_state):
-        dirty_flags = new_state.state()
-        if dirty_flags & QPaintEngine.DirtyTransform:
+        dirty_flags = int(new_state.state())
+        if dirty_flags & int(QPaintEngine.DirtyTransform):
             self._transform = new_state.transform()
-        if dirty_flags & QPaintEngine.DirtyPen:
+        if dirty_flags & int(QPaintEngine.DirtyPen):
             self._pen = new_state.pen()
-        if (dirty_flags & QPaintEngine.DirtyClipEnabled or
-                dirty_flags & QPaintEngine.DirtyClipRegion or
-                dirty_flags & QPaintEngine.DirtyClipPath):
+        if (dirty_flags & int(QPaintEngine.DirtyClipEnabled) or
+                dirty_flags & int(QPaintEngine.DirtyClipRegion) or
+                dirty_flags & int(QPaintEngine.DirtyClipPath)):
             # Clipping seems to be done by the QtSVG library's own renderer so
             # some time can be saved here!
             if new_state.clipOperation() != Qt.ClipOperation.NoClip:
                 raise NotImplementedError(
                     "Clipping mode {} not supported".format(
                         new_state.clipOperation()))
-        if dirty_flags & QPaintEngine.DirtyCompositionMode:
+        if dirty_flags & int(QPaintEngine.DirtyCompositionMode):
             # Other modes not expected (not available in SVG)
             if new_state.compositionMode() != \
                     QPainter.CompositionMode.SourceOver:
