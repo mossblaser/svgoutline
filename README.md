@@ -13,7 +13,7 @@ Features
   dashed lines and object/layer visibility. Converts all of these
   into simple straight line segments with no transformations required:
   
-  ![Input SVG](./samples/basic_sample_input.svg)
+  ![Input SVG](./samples/basic_sample_input_text_as_outlines_for_readme.svg)
   ![Arrow](./samples/arrow.svg)
   ![Output SVG](./samples/basic_sample_output.svg)
 * **Ignores out non-stroked objects.**
