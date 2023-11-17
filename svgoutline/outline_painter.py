@@ -20,15 +20,15 @@ try:
 except ImportError:
     izip = zip
 
-from PySide2.QtGui import QPainter
-from PySide2.QtGui import QPaintDevice
-from PySide2.QtGui import QPaintEngine
+from PySide6.QtGui import QPainter
+from PySide6.QtGui import QPaintDevice
+from PySide6.QtGui import QPaintEngine
 
-from PySide2.QtCore import Qt
-from PySide2.QtCore import QLineF
+from PySide6.QtCore import Qt
+from PySide6.QtCore import QLineF
 
-from PySide2.QtGui import QPen
-from PySide2.QtGui import QTransform
+from PySide6.QtGui import QPen
+from PySide6.QtGui import QTransform
 
 
 def split_line(line, offset):
@@ -183,7 +183,7 @@ class OutlinePaintEngine(QPaintEngine):
 
         # Implementation should look something like:
         #
-        #     from PySide2.QtGui import QPainterPath
+        #     from PySide6.QtGui import QPainterPath
         #     path = QPainterPath()
         #     for i, point in enumerate(points):
         #         if i == 0:

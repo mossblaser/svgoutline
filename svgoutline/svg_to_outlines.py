@@ -1,9 +1,9 @@
 from xml.etree import ElementTree
 
-from PySide2.QtGui import QGuiApplication
-from PySide2.QtGui import QPainter
-from PySide2.QtSvg import QSvgRenderer
-from PySide2.QtCore import QXmlStreamReader
+from PySide6.QtGui import QGuiApplication
+from PySide6.QtGui import QPainter
+from PySide6.QtSvg import QSvgRenderer
+from PySide6.QtCore import QXmlStreamReader
 
 from svgoutline.svg_utils import namespaces, get_svg_page_size
 from svgoutline.outline_painter import OutlinePaintDevice
@@ -42,7 +42,7 @@ def svg_to_outlines(root, width_mm=None, height_mm=None, pixels_per_mm=5.0):
 
     .. note::
 
-        Due to its internal use of Qt, a PySide2.QtGui.QGuiApplication will be
+        Due to its internal use of Qt, a PySide6.QtGui.QGuiApplication will be
         created if one has not already been created. Non-Qt users and most Qt
         users should not be affected by this.
 

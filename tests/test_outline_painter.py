@@ -6,15 +6,15 @@ from svgoutline.outline_painter import (
     OutlinePaintDevice,
 )
 
-from PySide2.QtGui import QPainter
-from PySide2.QtGui import QPainterPath
-from PySide2.QtGui import QFont
-from PySide2.QtGui import QColor
-from PySide2.QtGui import QPen
-from PySide2.QtGui import QBrush
-from PySide2.QtGui import QGuiApplication
+from PySide6.QtGui import QPainter
+from PySide6.QtGui import QPainterPath
+from PySide6.QtGui import QFont
+from PySide6.QtGui import QColor
+from PySide6.QtGui import QPen
+from PySide6.QtGui import QBrush
+from PySide6.QtGui import QGuiApplication
 
-from PySide2.QtCore import Qt
+from PySide6.QtCore import Qt
 
 
 @pytest.fixture(scope="module")
