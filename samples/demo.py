@@ -62,7 +62,7 @@ def main():
 
     # Define markers for line starts and vertices
     mm_per_pixel = 25.4 / 96.0
-    builder.start("defs")
+    builder.start("defs", {})
     builder.start("rect", {
         "id": "start",
         "style": "fill:white;stroke:black;stroke-width:{}".format(
