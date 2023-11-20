@@ -97,3 +97,76 @@ def get_svg_page_size(root):
     height_mm = css_dimension_to_mm(height, pixels_per_mm)
 
     return (width_mm, height_mm)
+
+
+def convert_polylines_to_path(root):
+    """
+    Given an ElementTree-parsed SVG file, finds all line, polyline and polygon elements,
+    converts these into path elements and returns the converted ElementTree.
+
+    This conversion is needed to circumvent a bug in the PySide (or QT?) library that prevents
+    these element being parsed correctly in outline_painter.py
+    """
+
+    for element in root.findall(".//{*}line"):
+        element.tag = "path"
+        x1, y1, x2, y2 = [element.attrib.pop(attr) for attr in ("x1", "y1", "x2", "y2")]
+        element.set("d", f"M {x1} {y1} L {x2} {y2}")
+
+    for element in root.findall(".//{*}polyline"):
+        element.tag = "path"
+        points = element.attrib.pop("points")
+        element.set("d", _polyline2pathd(points))
+
+    for element in root.findall(".//{*}polygon"):
+        element.tag = "path"
+        points = element.attrib.pop("points")
+        element.set("d", _polygon2pathd(points))
+
+    return root
+
+
+# The following code is borrowed (and ever so slightly altered) from the svgpathtools package by
+# mathandy: https://github.com/mathandy/svgpathtools (nov. 2023)
+
+"""Regular expression to match the coordinate pairs contained in the SVG-Polyline and Polygon 'points'-attribrute:"""
+COORD_PAIR_TMPLT = re.compile(
+    r'([\+-]?\d*[\.\d]\d*[eE][\+-]?\d+|[\+-]?\d*[\.\d]\d*)' +
+    r'(?:\s*,\s*|\s+|(?=-))' +
+    r'([\+-]?\d*[\.\d]\d*[eE][\+-]?\d+|[\+-]?\d*[\.\d]\d*)'
+)
+
+
+def _polyline2pathd(polyline: str, is_polygon=False):
+    """converts the string from a polyline points-attribute to a string for a
+    Path object d-attribute"""
+
+    points = COORD_PAIR_TMPLT.findall(polyline)
+
+    closed = (float(points[0][0]) == float(points[-1][0]) and
+              float(points[0][1]) == float(points[-1][1]))
+
+    # The `parse_path` call ignores redundant 'z' (closure) commands
+    # e.g. `parse_path('M0 0L100 100Z') == parse_path('M0 0L100 100L0 0Z')`
+    # This check ensures that an n-point polygon is converted to an n-Line path.
+    if is_polygon and closed:
+        points.append(points[0])
+
+    d = 'M' + 'L'.join('{0} {1}'.format(x,y) for x,y in points)
+    if is_polygon or closed:
+        d += 'z'
+    return d
+
+
+# Borrowed from svgpathtools package:
+def _polygon2pathd(polyline):
+    """converts the string from a polygon points-attribute to a string
+    for a Path object d-attribute.
+    Note:  For a polygon made from n points, the resulting path will be
+    composed of n lines (even if some of these lines have length zero).
+    """
+    return _polyline2pathd(polyline, True)
+
+
+# (end of code borrowed from svgpathtools)
+
