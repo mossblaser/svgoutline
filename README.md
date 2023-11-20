@@ -84,9 +84,9 @@ Limitations
     supported, for example text on path, line wrapping or style changes mid
     text element.
 * **Depends on [Qt for Python (a.k.a.
-  PySide2)](https://wiki.qt.io/Qt_for_Python).**  This is a relatively
+  PySide6)](https://wiki.qt.io/Qt_for_Python).**  This is a relatively
   non-trivial dependency but is easy to install from
-  [PyPI](https://pypi.org/project/PySide2/) on most platforms. Unfortunately it
+  [PyPI](https://pypi.org/project/PySide6/) on most platforms. Unfortunately it
   makes svgoutline subject to the same bugs (e.g.
   [QTBUG-72997](https://bugreports.qt.io/browse/QTBUG-72997) which at the time
   of writing causes text outlines and dash patterns to render too small).
