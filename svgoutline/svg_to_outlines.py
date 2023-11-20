@@ -5,7 +5,7 @@ from PySide6.QtGui import QPainter
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtCore import QXmlStreamReader
 
-from svgoutline.svg_utils import namespaces, get_svg_page_size
+from svgoutline.svg_utils import namespaces, get_svg_page_size, convert_polylines_to_path
 from svgoutline.outline_painter import OutlinePaintDevice
 
 
@@ -92,6 +92,9 @@ def svg_to_outlines(root, width_mm=None, height_mm=None, pixels_per_mm=5.0):
     # Determine the page size from the document if necessary
     if width_mm is None or height_mm is None:
         width_mm, height_mm = get_svg_page_size(root)
+
+    # Convert line, polyline and polygons elements to path-elements
+    root = convert_polylines_to_path(root)
 
     # Load the SVG into QSvg
     xml_stream_reader = QXmlStreamReader()
