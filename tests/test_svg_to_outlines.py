@@ -9,33 +9,39 @@ from svgoutline.svg_to_outlines import svg_to_outlines
 
 def test_empty():
     # Simple case: An empty file
-    svg = ElementTree.fromstring("""
+    svg = ElementTree.fromstring(
+        """
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
         </svg>
-    """)
+    """
+    )
     assert svg_to_outlines(svg) == []
 
 
 def test_display_none():
     # Simple case: A file with an invisible line
-    svg = ElementTree.fromstring("""
+    svg = ElementTree.fromstring(
+        """
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
             <path
               style="stroke-width:0.1;stroke:#ff0000;display:none"
               d="M0,0 L2,1"
             />
         </svg>
-    """)
+    """
+    )
     assert svg_to_outlines(svg) == []
 
 
 def test_no_stroke():
     # Simple case: A file with line not stroked
-    svg = ElementTree.fromstring("""
+    svg = ElementTree.fromstring(
+        """
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
             <path style="stroke:none" d="M0,0 L2,1"/>
         </svg>
-    """)
+    """
+    )
     assert svg_to_outlines(svg) == []
 
 
@@ -58,11 +64,13 @@ def test_no_stroke():
 )
 def test_straight_line(element: str):
     # Simple case: A straight red line
-    svg = ElementTree.fromstring(f"""
+    svg = ElementTree.fromstring(
+        f"""
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
             {element}
         </svg>
-    """)
+    """
+    )
     assert svg_to_outlines(svg) == [
         ((1, 0, 0, 1), 1, [(0, 0), (20, 10)]),
     ]
@@ -94,14 +102,17 @@ def test_straight_line(element: str):
 )
 def test_polyline(element: str):
     # Simple case: A line with several steps
-    svg = ElementTree.fromstring(f"""
+    svg = ElementTree.fromstring(
+        f"""
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
             {element}
         </svg>
-    """)
+    """
+    )
     assert svg_to_outlines(svg) == [
         ((1, 1, 0, 1), 1, [(0, 0), (0, 10), (20, 10), (20, 0)]),
     ]
+
 
 @pytest.mark.parametrize(
     "element",
@@ -129,11 +140,13 @@ def test_polyline(element: str):
 )
 def test_polygon(element: str):
     # Simple case: A line with several steps
-    svg = ElementTree.fromstring(f"""
+    svg = ElementTree.fromstring(
+        f"""
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
             {element}
         </svg>
-    """)
+    """
+    )
     assert svg_to_outlines(svg) == [
         ((1, 1, 0, 1), 1, [(0, 0), (0, 10), (20, 10), (20, 0), (0, 0)]),
     ]
@@ -141,7 +154,8 @@ def test_polygon(element: str):
 
 def test_rect():
     # Simple case: A <rect>
-    svg = ElementTree.fromstring("""
+    svg = ElementTree.fromstring(
+        """
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
             <rect
               style="stroke-width:0.1;stroke:#ffffff"
@@ -151,7 +165,8 @@ def test_rect():
               y="0"
             />
         </svg>
-    """)
+    """
+    )
     out = svg_to_outlines(svg)
 
     assert len(out) == 1
@@ -161,26 +176,29 @@ def test_rect():
     assert width == 1
 
     assert len(line) == 5
-    edges = set(tuple(sorted([start, end]))
-                for start, end in zip(line, line[1:]))
-    assert edges == set([
-        ((0, 0), (0, 10)),
-        ((0, 0), (20, 0)),
-        ((20, 0), (20, 10)),
-        ((0, 10), (20, 10)),
-    ])
+    edges = set(tuple(sorted([start, end])) for start, end in zip(line, line[1:]))
+    assert edges == set(
+        [
+            ((0, 0), (0, 10)),
+            ((0, 0), (20, 0)),
+            ((20, 0), (20, 10)),
+            ((0, 10), (20, 10)),
+        ]
+    )
 
 
 def test_dashes():
     # Simple case: A dashed path
-    svg = ElementTree.fromstring("""
+    svg = ElementTree.fromstring(
+        """
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
             <path
               style="stroke-width:1;stroke:black;stroke-width:1;stroke-dasharray:0.75,0.25"
               d="M0,0 L2,0"
             />
         </svg>
-    """)
+    """
+    )
     assert svg_to_outlines(svg) == [
         ((0, 0, 0, 1), 10, [(0, 0), (7.5, 0)]),
         ((0, 0, 0, 1), 10, [(10, 0), (17.5, 0)]),
@@ -189,7 +207,8 @@ def test_dashes():
 
 def test_scale_transform():
     # Check scaling works (and also applies correctly to dashed lines)
-    svg = ElementTree.fromstring("""
+    svg = ElementTree.fromstring(
+        """
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
             <g transform="scale(2, 1)">
                 <path
@@ -198,7 +217,8 @@ def test_scale_transform():
                 />
             </g>
         </svg>
-    """)
+    """
+    )
     out = svg_to_outlines(svg)
     assert len(out) == 1
     colour, width, lines = out[0]
@@ -223,11 +243,13 @@ def quadratic_bezier(start, control, end, p):
 
 def test_bezier():
     # Check bezier curves work correctly
-    svg = ElementTree.fromstring("""
+    svg = ElementTree.fromstring(
+        """
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
             <path style="stroke-width:0.1;stroke:black" d="M0,0 Q1,1 2,0"/>
         </svg>
-    """)
+    """
+    )
     out = svg_to_outlines(svg)
 
     assert len(out) == 1
@@ -236,20 +258,22 @@ def test_bezier():
 
     line_buf = LineString(line).buffer(0.2)
     for p in range(101):
-        point = Point(quadratic_bezier((0, 0), (10, 10), (20, 0), p/100.0))
+        point = Point(quadratic_bezier((0, 0), (10, 10), (20, 0), p / 100.0))
         assert line_buf.intersects(point), (p, line_buf.distance(point))
 
 
 def test_text():
     # Check text is rendered sensibly
-    svg = ElementTree.fromstring("""
+    svg = ElementTree.fromstring(
+        """
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
             <text
               style="stroke-width:0.1;font-size:1;stroke:black"
               x="0" y="1"
             >T</text>
         </svg>
-    """)
+    """
+    )
     out = svg_to_outlines(svg)
 
     assert len(out) == 1
@@ -273,12 +297,9 @@ def test_text():
 
     # With approximately the correct proportions (i.e. wide bit of the 'T' at
     # the top, lower parts narrower)
-    btm_rect = box(minx, miny + height*0.666,
-                   maxx, maxy)
-    mid_rect = box(minx, miny + height*0.333,
-                   maxx, miny + height*0.666)
-    top_rect = box(minx, miny + height,
-                   maxx, miny + height*0.333)
+    btm_rect = box(minx, miny + height * 0.666, maxx, maxy)
+    mid_rect = box(minx, miny + height * 0.333, maxx, miny + height * 0.666)
+    top_rect = box(minx, miny + height, maxx, miny + height * 0.333)
     btm_area = btm_rect.intersection(letter).area
     mid_area = mid_rect.intersection(letter).area
     top_area = top_rect.intersection(letter).area
@@ -289,14 +310,16 @@ def test_text():
 @pytest.mark.xfail(strict=True, reason="QtSVG Bug QTBUG-72997")
 def test_text_line_width_and_colour():
     # Check text is rendered with the correct line width and colour
-    svg = ElementTree.fromstring("""
+    svg = ElementTree.fromstring(
+        """
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
             <text
               style="stroke-width:0.1;font-size:1;stroke:black"
               x="0" y="1"
             >T</text>
         </svg>
-    """)
+    """
+    )
     out = svg_to_outlines(svg)
 
     assert len(out) == 1
@@ -311,11 +334,13 @@ def test_text_line_width_and_colour():
 def test_resolution(pixels_per_mm):
     # Check varying the resolution does correctly increase/decrease the detail
     # added to a curve
-    svg = ElementTree.fromstring("""
+    svg = ElementTree.fromstring(
+        """
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
             <path style="stroke-width:0.1;stroke:black" d="M0,0 Q1,1 2,0"/>
         </svg>
-    """)
+    """
+    )
     out = svg_to_outlines(svg, pixels_per_mm=pixels_per_mm)
 
     assert len(out) == 1
@@ -326,7 +351,7 @@ def test_resolution(pixels_per_mm):
     line_fine_buf = LineString(line).buffer(0.01 / pixels_per_mm)
 
     points_on_bezier = [
-        Point(quadratic_bezier((0, 0), (10, 10), (20, 0), p/1000.0))
+        Point(quadratic_bezier((0, 0), (10, 10), (20, 0), p / 1000.0))
         for p in range(1001)
     ]
 
@@ -336,13 +361,13 @@ def test_resolution(pixels_per_mm):
 
     # When we use an excessively fine tollerance for the detail level tested,
     # some points may not lie on the line.
-    assert not all(line_fine_buf.intersects(point)
-                   for point in points_on_bezier)
+    assert not all(line_fine_buf.intersects(point) for point in points_on_bezier)
 
 
 def test_use():
     # Make sure <use> directives work
-    svg = ElementTree.fromstring("""
+    svg = ElementTree.fromstring(
+        """
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
             <path
               id="p1"
@@ -357,7 +382,8 @@ def test_use():
               transform="translate(0, 1)"
             />
         </svg>
-    """)
+    """
+    )
     assert svg_to_outlines(svg) == [
         ((1, 0, 0, 1), 1, [(0, 0), (20, 0)]),
         ((1, 0, 0, 1), 1, [(0, 10), (20, 10)]),
@@ -366,7 +392,8 @@ def test_use():
 
 def test_gradient():
     # Make sure gradient strokes result in 'None' as the output colour.
-    svg = ElementTree.fromstring("""
+    svg = ElementTree.fromstring(
+        """
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
             <defs>
                 <linearGradient id="g1" x1="0" y1="0" x2="2" y2="1">
@@ -380,7 +407,8 @@ def test_gradient():
               d="M0,0 L2,1"
             />
         </svg>
-    """)
+    """
+    )
     assert svg_to_outlines(svg) == [
         (None, 1, [(0, 0), (20, 10)]),
     ]
@@ -393,7 +421,8 @@ def test_text_paths():
     #
     # When text path support works correctly, a 'T' will be rendered upside
     # down since the path it is on runs from right-to-left.
-    svg = ElementTree.fromstring("""
+    svg = ElementTree.fromstring(
+        """
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1"
           xmlns:xlink="http://www.w3.org/1999/xlink">
           <path
@@ -408,7 +437,8 @@ def test_text_paths():
                id="textPath38413">T</textPath>
           </text>
         </svg>
-    """)
+    """
+    )
     out = svg_to_outlines(svg)
 
     # Currently unsupported so expect no text to be shown.
@@ -420,14 +450,16 @@ def test_text_spans():
     # (though their contents retained, just in the wrong space). This test just
     # checks this is occurring and that support has not been added without
     # being noticed...
-    svg = ElementTree.fromstring("""
+    svg = ElementTree.fromstring(
+        """
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
             <text
               style="stroke-width:0.1;font-size:1;stroke:black"
               x="0" y="1"
             >T<tspan dy="1">T</tspan></text>
         </svg>
-    """)
+    """
+    )
     out = svg_to_outlines(svg)
 
     assert len(out) == 2
@@ -447,7 +479,8 @@ def test_text_spans():
 def test_occlusion():
     # Occlusion is not supported; this test make sure this doesn't change
     # without me noticing...
-    svg = ElementTree.fromstring("""
+    svg = ElementTree.fromstring(
+        """
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
             <rect
               style="fill:white;stroke-width:0.1;stroke:#00ff00"
@@ -464,7 +497,8 @@ def test_occlusion():
               y="0"
             />
         </svg>
-    """)
+    """
+    )
     (
         (colour_0, width_0, lines_0),
         (colour_1, width_1, lines_1),
@@ -482,7 +516,8 @@ def test_occlusion():
 def test_clipping():
     # Clipping is not part of the SVG Tiny 1.2 spec and clipping paths will be
     # ignored. This test checks that this doesn't change unepxectedly.
-    svg = ElementTree.fromstring("""
+    svg = ElementTree.fromstring(
+        """
         <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 2 1">
             <defs>
                 <clipPath id="clip0" clipPathUnits="userSpaceOnUse">
@@ -504,8 +539,9 @@ def test_clipping():
               y="0"
             />
         </svg>
-    """)
-    ((colour, width, lines), ) = svg_to_outlines(svg)
+    """
+    )
+    ((colour, width, lines),) = svg_to_outlines(svg)
 
     assert colour == (0, 1, 0, 1)
     assert width == 1

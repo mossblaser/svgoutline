@@ -23,7 +23,6 @@ def app():
 
 
 class TestSplitLine(object):
-
     def test_empty_line(self):
         # Degenerate input case
         assert split_line([], -1) == ([], [])
@@ -58,35 +57,39 @@ class TestSplitLine(object):
     def test_multiple_line_segment(self):
         # Before start
         assert split_line([(0, 0), (2, 0), (2, 2)], -1) == (
-            [], [(0, 0), (2, 0), (2, 2)])
+            [],
+            [(0, 0), (2, 0), (2, 2)],
+        )
 
         # At start
-        assert split_line([(0, 0), (2, 0), (2, 2)], 0) == (
-            [], [(0, 0), (2, 0), (2, 2)])
+        assert split_line([(0, 0), (2, 0), (2, 2)], 0) == ([], [(0, 0), (2, 0), (2, 2)])
 
         # Part way through first segment
         assert split_line([(0, 0), (2, 0), (2, 2)], 1) == (
-            [(0, 0), (1, 0)], [(1, 0), (2, 0), (2, 2)])
+            [(0, 0), (1, 0)],
+            [(1, 0), (2, 0), (2, 2)],
+        )
 
         # On midpoint
         assert split_line([(0, 0), (2, 0), (2, 2)], 2) == (
-            [(0, 0), (2, 0)], [(2, 0), (2, 2)])
+            [(0, 0), (2, 0)],
+            [(2, 0), (2, 2)],
+        )
 
         # Part way through second segment
         assert split_line([(0, 0), (2, 0), (2, 2)], 3) == (
-            [(0, 0), (2, 0), (2, 1)], [(2, 1), (2, 2)])
+            [(0, 0), (2, 0), (2, 1)],
+            [(2, 1), (2, 2)],
+        )
 
         # At end
-        assert split_line([(0, 0), (2, 0), (2, 2)], 4) == (
-            [(0, 0), (2, 0), (2, 2)], [])
+        assert split_line([(0, 0), (2, 0), (2, 2)], 4) == ([(0, 0), (2, 0), (2, 2)], [])
 
         # Past end
-        assert split_line([(0, 0), (2, 0), (2, 2)], 5) == (
-            [(0, 0), (2, 0), (2, 2)], [])
+        assert split_line([(0, 0), (2, 0), (2, 2)], 5) == ([(0, 0), (2, 0), (2, 2)], [])
 
 
 class TestDashLine(object):
-
     @pytest.mark.parametrize("line", [[], [(0, 0)]])
     @pytest.mark.parametrize("dash_pattern", [[], [1, 1]])
     @pytest.mark.parametrize("dash_offset", [0, 1, -1])
@@ -178,7 +181,6 @@ class TestDashLine(object):
 
 
 class TestOutlinePaintDevice(object):
-
     @pytest.fixture
     def width(self):
         return 100.0
@@ -323,7 +325,11 @@ class TestOutlinePaintDevice(object):
             ((1.0, 0.0, 0.0, 1.0), 0.1, [(0.0, 0.0), (1.0, 0.0)]),
             ((0.0, 1.0, 0.0, 1.0), 0.1, [(0.0, 1.0), (1.0, 1.0)]),
             ((0.0, 0.0, 1.0, 1.0), 0.1, [(0.0, 2.0), (1.0, 2.0)]),
-            ((0.0, 0.0, 0.0, pytest.approx(128/255.)), 0.1, [(0.0, 3.0), (1.0, 3.0)]),
+            (
+                (0.0, 0.0, 0.0, pytest.approx(128 / 255.0)),
+                0.1,
+                [(0.0, 3.0), (1.0, 3.0)],
+            ),
             (None, 0.1, [(0.0, 4.0), (1.0, 4.0)]),
         ]
 
@@ -373,8 +379,7 @@ class TestOutlinePaintDevice(object):
         path.lineTo(3, 3)
         p.drawPath(path)
 
-        assert [(colour, lines)
-                for (colour, width, lines) in opd.getOutlines()] == [
+        assert [(colour, lines) for (colour, width, lines) in opd.getOutlines()] == [
             ((0.0, 0.0, 0.0, 1.0), [(0.0, 0.0), (1.0, 2.0)]),
             ((0.0, 0.0, 0.0, 1.0), [(2.0, 4.0), (3.0, 6.0)]),
         ]
@@ -392,8 +397,7 @@ class TestOutlinePaintDevice(object):
         path.lineTo(3, 0)
         p.drawPath(path)
 
-        assert [(colour, lines)
-                for (colour, width, lines) in opd.getOutlines()] == [
+        assert [(colour, lines) for (colour, width, lines) in opd.getOutlines()] == [
             ((0.0, 0.0, 0.0, 1.0), [(0.0, 0.0), (1.0, 0.0)]),
             ((0.0, 0.0, 0.0, 1.0), [(1.5, 0.0), (2.5, 0.0)]),
         ]

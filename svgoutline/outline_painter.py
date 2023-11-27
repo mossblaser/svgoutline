@@ -15,6 +15,7 @@ import warnings
 import math
 
 from itertools import cycle
+
 try:
     from itertools import izip
 except ImportError:
@@ -44,15 +45,15 @@ def split_line(line, offset):
     for i, ((x1, y1), (x2, y2)) in enumerate(zip(line, line[1:])):
         dx = x2 - x1
         dy = y2 - y1
-        length = math.sqrt((dx*dx) + (dy*dy))
+        length = math.sqrt((dx * dx) + (dy * dy))
 
         if length < offset:
             # Split point comes later
             offset -= length
         elif length == offset:
             # Split point exactly on (x2, y2)
-            before = line[:i+2]
-            after = line[i+1:]
+            before = line[: i + 2]
+            after = line[i + 1 :]
 
             # Special case: don't leave just the final point in the after list
             # since that isn't really useful...
@@ -64,8 +65,8 @@ def split_line(line, offset):
             # Split point between (x1, y1) and (x2, y2)
             xm = x1 + (dx * (offset / length))
             ym = y1 + (dy * (offset / length))
-            before = line[:i+1] + [(xm, ym)]
-            after = [(xm, ym)] + line[i+1:]
+            before = line[: i + 1] + [(xm, ym)]
+            after = [(xm, ym)] + line[i + 1 :]
             return before, after
 
     # Split point after end
@@ -78,8 +79,9 @@ def dash_line(line, dash_pattern, dash_offset=0):
     dash pattern and offset provided. Returns a new list [[(x, y), ...], ...].
     """
     if len(dash_pattern) % 2 != 0:
-        warnings.warn("Dash pattern with non-even number of lengths; "
-                      "ignoring final length.")
+        warnings.warn(
+            "Dash pattern with non-even number of lengths; " "ignoring final length."
+        )
         dash_pattern = dash_pattern[:-1]
 
     if not dash_pattern or len(line) <= 1:
@@ -148,22 +150,25 @@ class OutlinePaintEngine(QPaintEngine):
             self._transform = new_state.transform()
         if dirty_flags & QPaintEngine.DirtyPen:
             self._pen = new_state.pen()
-        if (dirty_flags & QPaintEngine.DirtyClipEnabled or
-                dirty_flags & QPaintEngine.DirtyClipRegion or
-                dirty_flags & QPaintEngine.DirtyClipPath):
+        if (
+            dirty_flags & QPaintEngine.DirtyClipEnabled
+            or dirty_flags & QPaintEngine.DirtyClipRegion
+            or dirty_flags & QPaintEngine.DirtyClipPath
+        ):
             # Clipping seems to be done by the QtSVG library's own renderer so
             # some time can be saved here!
             if new_state.clipOperation() != Qt.ClipOperation.NoClip:
                 raise NotImplementedError(
-                    "Clipping mode {} not supported".format(
-                        new_state.clipOperation()))
+                    "Clipping mode {} not supported".format(new_state.clipOperation())
+                )
         if dirty_flags & QPaintEngine.DirtyCompositionMode:
             # Other modes not expected (not available in SVG)
-            if new_state.compositionMode() != \
-                    QPainter.CompositionMode.SourceOver:
+            if new_state.compositionMode() != QPainter.CompositionMode.SourceOver:
                 raise NotImplementedError(
                     "CompositionMode {} not supported".format(
-                        new_state.compositionMode()))
+                        new_state.compositionMode()
+                    )
+                )
 
     def drawImage(self, r, pm, sr, flags):
         # Draw image outline...
@@ -195,13 +200,16 @@ class OutlinePaintEngine(QPaintEngine):
         #         else:
         #             path.lineTo(point)
         #     self.drawPath(path)
-        raise NotImplementedError("Qt for Python bug PYSIDE-891 "
-                                  "prevents drawPolygon being implemented")
+        raise NotImplementedError(
+            "Qt for Python bug PYSIDE-891 " "prevents drawPolygon being implemented"
+        )
 
     def drawPath(self, path):
         # Nothing to do if not drawing the outline
-        if (self._pen.style() == Qt.PenStyle.NoPen or
-                self._pen.brush().style() == Qt.BrushStyle.NoBrush):
+        if (
+            self._pen.style() == Qt.PenStyle.NoPen
+            or self._pen.brush().style() == Qt.BrushStyle.NoBrush
+        ):
             return
 
         # Determine colour
@@ -212,7 +220,7 @@ class OutlinePaintEngine(QPaintEngine):
 
         # Determine dash style
         pen_width = self._pen.widthF() or 1.0
-        dash_pattern = [v*pen_width for v in self._pen.dashPattern()]
+        dash_pattern = [v * pen_width for v in self._pen.dashPattern()]
         dash_offset = self._pen.dashOffset() * pen_width
 
         # When applying the dash style, perform this on a version of the line
@@ -225,7 +233,8 @@ class OutlinePaintEngine(QPaintEngine):
                 warnings.warn(
                     "Dashed lines transformed by non-singular matrices are "
                     "not supported and the dash pattern will be incorrectly "
-                    "scaled.")
+                    "scaled."
+                )
 
         # Approximate the scaling factor applied by the current transform as
         # being the scale applied to a diagonal line. This won't work if the
@@ -321,7 +330,7 @@ class OutlinePaintDevice(QPaintDevice):
         # Scale line coordinates back into mm (from pixels)
         scale = 1.0 / self._ppmm
         return [
-            (rgba, width*scale, [(x*scale, y*scale) for (x, y) in line])
+            (rgba, width * scale, [(x * scale, y * scale) for (x, y) in line])
             for (rgba, width, line) in self._paint_engine.getOutlines()
         ]
 

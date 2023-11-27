@@ -20,8 +20,11 @@ from svgoutline.outline_painter import OutlinePaintDevice
 try:
     register_xml_namespace = ElementTree.register_namespace
 except AttributeError:
+
     def register_xml_namespace(prefix, uri):
         ElementTree._namespace_map[uri] = prefix
+
+
 for prefix, uri in namespaces.items():
     register_xml_namespace(prefix, uri)
 
@@ -96,7 +99,7 @@ def svg_to_outlines(root, width_mm=None, height_mm=None, pixels_per_mm=5.0):
     # Determine the page size from the document if necessary
     if width_mm is None or height_mm is None:
         width_mm, height_mm = get_svg_page_size(root)
-    
+
     # Convert all <line>, <polyline> and <polygon> elements to <path>s to
     # work-around PySide bug PYSIDE-891. (See comments in
     # :py:mod:`svgoutline.outline_painter`.)
@@ -110,8 +113,7 @@ def svg_to_outlines(root, width_mm=None, height_mm=None, pixels_per_mm=5.0):
 
     # Paint the SVG into the OutlinePaintDevice which will capture the set of
     # line segments which make up the SVG as rendered.
-    outline_paint_device = OutlinePaintDevice(
-        width_mm, height_mm, pixels_per_mm)
+    outline_paint_device = OutlinePaintDevice(width_mm, height_mm, pixels_per_mm)
     painter = QPainter(outline_paint_device)
     try:
         svg_renderer.render(painter)
