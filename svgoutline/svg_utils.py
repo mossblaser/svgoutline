@@ -6,6 +6,8 @@ using Python's ElementTree library.
 
 import re
 
+from copy import deepcopy
+
 
 # Relevant XML namespace URIs used by SVGs
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
@@ -124,3 +126,49 @@ def get_svg_page_size(root, dpi: float = None, use_illustrator_heuristic: bool =
     height_mm = css_dimension_to_mm(height, pixels_per_mm)
 
     return (width_mm, height_mm)
+
+
+def lines_polylines_and_polygons_to_paths(root):
+    """
+    Given an SVG, convert all <line>, <polyline> and <polygon> elements to
+    equivalent <path> elements. This is intended purely as a workaround for
+    PySide bug PYSIDE-891 which prevents processing of SVGs containing those
+    element types. (See :py:mod:`svgoutline.outline_painter`.)
+    
+    If no substitutions are made, returns the original object unchanged,
+    otherwise returns an edited copy.
+    """
+    if (
+        root.find(f".//{{{SVG_NAMESPACE}}}line") is None and
+        root.find(f".//{{{SVG_NAMESPACE}}}polyline") is None and
+        root.find(f".//{{{SVG_NAMESPACE}}}polygon") is None
+    ):
+        # No substitutions required
+        return root
+    
+    root = deepcopy(root)
+    
+    for line in root.findall(f".//{{{SVG_NAMESPACE}}}line"):
+        line.tag = f"{{{SVG_NAMESPACE}}}path"
+        x1 = line.attrib.pop("x1")
+        y1 = line.attrib.pop("y1")
+        x2 = line.attrib.pop("x2")
+        y2 = line.attrib.pop("y2")
+        line.set("d", f"M{x1} {y1} L{x2} {y2}")
+    
+    for tag, closed in [("polyline", False), ("polygon", True)]:
+        for poly in root.findall(f".//{{{SVG_NAMESPACE}}}{tag}"):
+            poly.tag = f"{{{SVG_NAMESPACE}}}path"
+            
+            # NB: Since this function is a workaround which hopefully won't
+            # stick around forever I'm deliberately taking a casual approach to
+            # parsing here since this will work for any valid (or
+            # defacto-valid, i.e. comma-separated) SVG.
+            points = map(float, re.split(r"\s*(?:,|\s)\s*", poly.attrib.pop("points").strip()))
+            d = "M" + "L".join(f"{x} {y}" for x, y in zip(points, points))
+            if closed:
+                d += "Z"
+            poly.set("d", d)
+    
+    return root
+

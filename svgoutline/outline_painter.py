@@ -174,15 +174,19 @@ class OutlinePaintEngine(QPaintEngine):
         self.drawRects(r, 1)
 
     def drawPolygon(self, points, count, mode):
-        # Just draw the polygon using drawPath...
-        # NB: A bug prevents a useful implementation of this function being
-        # written. Fortunately the QtSVG renderer only ever uses QPainterPath
-        # objects for drawing.
-        raise NotImplementedError("Qt for Python bug PYSIDE-891 "
-                                  "prevents drawPolygon being implemented")
-
-        # Implementation should look something like:
+        # PySide bug PYSIDE-891 prevents a useful implementation of this
+        # function being written.
         #
+        # Since drawPolygon is only used for <line>, <polyline> and <polygon>
+        # elements, it is possible avoid this method being called by
+        # pre-processing the SVG to replace these elements with <paths>
+        # instead. See
+        # :py:func:`svgoutline.svg_utils.lines_polylines_and_polygons_to_paths`.
+        #
+        # If it were possible, an implementation of this method would look
+        # something like:
+        #
+        #     # Just draw the polygon using drawPath...
         #     from PySide6.QtGui import QPainterPath
         #     path = QPainterPath()
         #     for i, point in enumerate(points):
@@ -191,6 +195,8 @@ class OutlinePaintEngine(QPaintEngine):
         #         else:
         #             path.lineTo(point)
         #     self.drawPath(path)
+        raise NotImplementedError("Qt for Python bug PYSIDE-891 "
+                                  "prevents drawPolygon being implemented")
 
     def drawPath(self, path):
         # Nothing to do if not drawing the outline
