@@ -363,6 +363,6 @@ class OutlinePaintDevice(QPaintDevice):
         elif num == QPaintDevice.PdmDevicePixelRatio:
             return 1
         elif num == QPaintDevice.PdmDevicePixelRatioScaled:
-            return 1
+            return 1 * self.devicePixelRatioFScale()
         else:
             raise NotImplementedError("Unknown metric {}".format(num))
