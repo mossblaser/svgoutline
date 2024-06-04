@@ -124,6 +124,7 @@ class OutlinePaintEngine(QPaintEngine):
 
         self._transform = QTransform()
         self._pen = QPen()
+        self._opacity = 1.0
 
         # [((r, g, b, a) or None, width, [(x, y), ...]), ...]
         #
@@ -148,6 +149,8 @@ class OutlinePaintEngine(QPaintEngine):
         dirty_flags = new_state.state()
         if dirty_flags & QPaintEngine.DirtyTransform:
             self._transform = new_state.transform()
+        if dirty_flags & QPaintEngine.DirtyOpacity:
+            self._opacity = new_state.opacity()
         if dirty_flags & QPaintEngine.DirtyPen:
             self._pen = new_state.pen()
         if (
@@ -219,7 +222,13 @@ class OutlinePaintEngine(QPaintEngine):
             # 32 bit floats returned by getRgbF.
             ri, gi, bi, ai = self._pen.brush().color().getRgb()
 
-            rgba = (ri / 255, gi / 255, bi / 255, (ai / 255))
+            # NB: The opacity is a function of the brush opacity and the
+            # current drawing state opacity. The drawing state opacity is
+            # reported as a 64 bit float so is already the "native" kind for
+            # Python
+            a = self._opacity * (ai / 255)
+
+            rgba = (ri / 255, gi / 255, bi / 255, a)
         else:
             rgba = None
 

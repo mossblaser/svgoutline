@@ -589,3 +589,29 @@ def test_rgb_values():
         assert coord_to_colour[(0, i)] == (i / 255, 0, 0, 1.0)
         assert coord_to_colour[(1, i)] == (0, i / 255, 0, 1.0)
         assert coord_to_colour[(2, i)] == (0, 0, i / 255, 1.0)
+
+
+def test_alpha_values():
+    lines = ""
+    for i in range(256):
+        lines += f"""
+            <line
+                style="stroke-width:0.1;stroke:black"
+                opacity="{i/255}"
+                x1="0" x2="1"
+                y1="{i}" y2="{i}"
+            />
+        """
+    lines = svg_to_outlines(
+        ElementTree.fromstring(
+            f"""
+                <svg xmlns="http://www.w3.org/2000/svg" width="30cm" height="30cm" viewBox="0 0 300 300">
+                    {lines}
+                </svg>
+            """
+        )
+    )
+    assert len(lines) == 256
+    coord_to_colour = {(points[0][0], points[0][1]): rgba for rgba, _, points in lines}
+    for i in range(256):
+        assert coord_to_colour[(0, i)] == (0, 0, 0, i / 255)
