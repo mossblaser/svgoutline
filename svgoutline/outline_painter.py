@@ -214,7 +214,12 @@ class OutlinePaintEngine(QPaintEngine):
 
         # Determine colour
         if self._pen.brush().style() == Qt.BrushStyle.SolidPattern:
-            rgba = self._pen.brush().color().getRgbF()
+            # NB: We do the int-to-float conversion here to ensure we use 64
+            # bit floating point precision (matching Python) rather than the
+            # 32 bit floats returned by getRgbF.
+            ri, gi, bi, ai = self._pen.brush().color().getRgb()
+
+            rgba = (ri / 255, gi / 255, bi / 255, (ai / 255))
         else:
             rgba = None
 
