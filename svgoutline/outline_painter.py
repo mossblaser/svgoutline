@@ -30,6 +30,7 @@ from PySide6.QtCore import QLineF
 
 from PySide6.QtGui import QPen
 from PySide6.QtGui import QTransform
+from PySide6.QtGui import QPainterPath
 
 
 def split_line(line, offset):
@@ -175,11 +176,20 @@ class OutlinePaintEngine(QPaintEngine):
 
     def drawImage(self, r, pm, sr, flags):
         # Draw image outline...
-        self.drawRects(r, 1)
+        self._drawRectOutline(r)
 
     def drawPixmap(self, r, pm, sr):
         # Draw pixmap outline...
-        self.drawRects(r, 1)
+        self._drawRectOutline(r)
+
+    def _drawRectOutline(self, r):
+        # NB: Implemented via drawPath rather than the inherited
+        # QPaintEngine.drawRects since newer PySide6 releases (>=6.11) changed
+        # that binding's signature from drawRects(rects, count) to a single
+        # sequence argument, breaking the old two-argument call.
+        path = QPainterPath()
+        path.addRect(r)
+        self.drawPath(path)
 
     def drawPolygon(self, points, count, mode):
         # PySide bug PYSIDE-891 prevents a useful implementation of this
