@@ -262,6 +262,27 @@ def test_bezier():
         assert line_buf.intersects(point), (p, line_buf.distance(point))
 
 
+def test_bitmap():
+    # Check images are treated like rectangles (and don't end up in the output
+    # because they don't have a stroked border!
+    svg = ElementTree.fromstring(
+        """
+        <svg xmlns="http://www.w3.org/2000/svg" width="2cm" height="1cm" viewBox="0 0 1 1">
+            <image
+                x="0"
+                y="0"
+                width="1"
+                height="1"
+                href="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+            />
+        </svg>
+    """
+    )
+    out = svg_to_outlines(svg)
+
+    assert len(out) == 0
+
+
 def test_text():
     # Check text is rendered sensibly
     svg = ElementTree.fromstring(

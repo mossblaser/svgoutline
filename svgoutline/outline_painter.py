@@ -175,11 +175,17 @@ class OutlinePaintEngine(QPaintEngine):
 
     def drawImage(self, r, pm, sr, flags):
         # Draw image outline...
-        self.drawRects(r, 1)
+        try:
+            self.drawRects([r])  # PySide6.11+
+        except TypeError:
+            self.drawRects(r, 1)  # PySide6.10 and before
 
     def drawPixmap(self, r, pm, sr):
         # Draw pixmap outline...
-        self.drawRects(r, 1)
+        try:
+            self.drawRects([r])  # PySide6.11+
+        except TypeError:
+            self.drawRects(r, 1)  # PySide6.10 and before
 
     def drawPolygon(self, points, count, mode):
         # PySide bug PYSIDE-891 prevents a useful implementation of this
